@@ -3,7 +3,6 @@ import pyro
 import pyro.distributions as dist
 import pyro.infer
 import pyro.optim
-
 import torch
 import torch.nn.functional as F
 from torch.distributions import constraints

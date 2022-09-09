@@ -1,23 +1,18 @@
-from collections import defaultdict
 import time
+from collections import defaultdict
+from functools import partial
 
-import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-
+import matplotlib.pyplot as plt
 import numpy as np
-
 import pandas as pd
-
 import pyro
 import pyro.distributions as dist
 import pyro.infer
 import pyro.optim
-
 import torch
 
-from functools import partial
-
-from pyro_specification import model, guide, compute_f
+from pyro_specification import compute_f, guide, model
 
 
 def my_loss(
@@ -126,9 +121,7 @@ def main():
     print("importing the data...")
     dataset = "sunspots"
     dataset_names = {
-        "ar_simulation": "AR Simulation",
         "ma_simulation": "MA Simulation",
-        "ma_simulation_long": "Long MA Simulation",
         "sunspots": "Sunspots Dataset",
     }
     dataset_name = dataset_names[dataset]
@@ -172,7 +165,11 @@ def main():
     ax.grid(which="minor", linestyle="--", alpha=0.5)
 
     ax.set_xlabel("Index" if dataset == "ma_simulation" else "Year")
-    ax.set_ylabel(f"De-Meaned Sqrt. of the Number of Sunspots")
+    ax.set_ylabel(
+        "value"
+        if dataset == "ma_simulation"
+        else "De-Meaned Sqrt. of the Number of Sunspots"
+    )
 
     fig.set_size_inches(6, 4)
     filename = f"../images/{dataset}_data.png"
@@ -181,7 +178,7 @@ def main():
 
     ### sample from the prior
     print("sampling from the prior...")
-    prior_samples = np.array([model(**input).numpy() for _ in range(1000)])
+    prior_samples = np.array([model(**input).numpy() for _ in range(3000)])
 
     ### run the inference process
     print("running the inference process...")
