@@ -126,17 +126,17 @@ def main():
     }
     dataset_name = dataset_names[dataset]
 
-    df = pd.read_csv(f"../data/{dataset}.csv")
+    df = pd.read_csv(f"data/{dataset}.csv")
     df.columns = ["X"]
     data = torch.from_numpy(np.array(df["X"]))
 
     periodogram = torch.from_numpy(
-        np.array(pd.read_csv(f"../data/{dataset}_periodogram.csv")["x"])[0:-1]
+        np.array(pd.read_csv(f"data/{dataset}_periodogram.csv")["x"])[0:-1]
         / (2 * np.pi)
     )
 
     omegas = torch.from_numpy(
-        np.array(pd.read_csv(f"../data/{dataset}_frequency.csv")["x"])[0:-1] / np.pi
+        np.array(pd.read_csv(f"data/{dataset}_frequency.csv")["x"])[0:-1] / np.pi
     )
     omegas_np = omegas.detach().numpy() * np.pi
 
@@ -172,7 +172,7 @@ def main():
     )
 
     fig.set_size_inches(6, 4)
-    filename = f"../images/{dataset}_data.png"
+    filename = f"images/{dataset}_data.png"
     fig.savefig(filename)
     plt.close(fig)
 
@@ -295,15 +295,13 @@ def main():
         return {"V": V, "Z": Z, "tau": tau, "K": K}
 
     ### load the MCMC estimate and true posterior, if available
-    mcmc_spd = np.genfromtxt(
-        f"../data/{dataset}_mcmc.csv", delimiter=",", skip_header=1
-    )
+    mcmc_spd = np.genfromtxt(f"data/{dataset}_mcmc.csv", delimiter=",", skip_header=1)
     N = len(mcmc_spd)
     omegas_mcmc = np.linspace(0, np.pi, num=N)
     true_psd = None
     if dataset == "ma_simulation":
         true_psd = np.genfromtxt(
-            f"../data/{dataset}_true_psd.csv", delimiter=",", skip_header=1
+            f"data/{dataset}_true_psd.csv", delimiter=",", skip_header=1
         )
 
     print("creating plots...")
@@ -357,7 +355,7 @@ def main():
     ax.set_ylabel("Value")
 
     fig.set_size_inches(6, 4)
-    filename = f"../images/{dataset}_prior.png"
+    filename = f"images/{dataset}_prior.png"
     fig.savefig(filename)
     plt.close(fig)
 
@@ -414,7 +412,7 @@ def main():
     ax.set_ylabel("Value")
 
     fig.set_size_inches(6, 4)
-    filename = f"../images/{dataset}_expected_value_spds_best_seeds.png"
+    filename = f"images/{dataset}_expected_value_spds_best_seeds.png"
     fig.savefig(filename)
     plt.close(fig)
 
@@ -464,7 +462,7 @@ def main():
     ax.set_ylabel("Value")
 
     fig.set_size_inches(6, 4)
-    filename = f"../images/{dataset}_spds_one_seed.png"
+    filename = f"images/{dataset}_spds_one_seed.png"
     fig.savefig(filename)
     plt.close(fig)
 
@@ -515,7 +513,7 @@ def main():
     ax.set_ylabel("Value")
 
     fig.set_size_inches(6, 4)
-    filename = f"../images/{dataset}_mean_spd_best_seeds.png"
+    filename = f"images/{dataset}_mean_spd_best_seeds.png"
     fig.savefig(filename)
     plt.close(fig)
 
@@ -565,7 +563,7 @@ def main():
     ax.set_ylabel("Value")
 
     fig.set_size_inches(6, 4)
-    filename = f"../images/{dataset}_median_spd_best_seeds.png"
+    filename = f"images/{dataset}_median_spd_best_seeds.png"
     fig.savefig(filename)
     plt.close(fig)
 
@@ -604,7 +602,7 @@ def main():
     ax.set_ylabel(f"Median ELBO within ${smoothing_number}\,${smoothing_unit}")
 
     fig.set_size_inches(6, 4)
-    filename = f"../images/{dataset}_convergence.png"
+    filename = f"images/{dataset}_convergence.png"
     fig.savefig(filename)
     plt.close(fig)
 
