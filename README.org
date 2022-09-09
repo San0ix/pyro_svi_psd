@@ -22,3 +22,5 @@ Then, run the python script =main.py=.
 #+begin_src sh
 python main.py
 #+end_src
+
+To change the dataset that is used during inference, modify the variable =dataset=; valid options are =sunspots= and =ma_simulation=.
