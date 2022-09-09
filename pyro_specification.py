@@ -8,7 +8,7 @@ import torch.nn.functional as F
 from torch.distributions import constraints
 
 
-def stick_breaking_weights(stick_breaking_fractions):
+def stick_breaking_weights(stick_breaking_fractions: torch.Tensor):
     """Compute the stick-breaking weights from the given fractions."""
     stick_breaking_fractions1m_cumprod = (1 - stick_breaking_fractions).cumprod(-1)
     return F.pad(stick_breaking_fractions, (0, 1), value=1) * F.pad(
@@ -16,7 +16,14 @@ def stick_breaking_weights(stick_breaking_fractions):
     )
 
 
-def compute_f(omegas, tau, V, Z, K, **kwargs):
+def compute_f(
+    omegas: torch.Tensor,
+    tau: torch.Tensor,
+    V: torch.Tensor,
+    Z: torch.Tensor,
+    K: torch.Tensor,
+    **kwargs
+):
     """Compute the approximated spectral density through the Bernstein polynomial prior."""
     ### reshape tensors
     # W.shape == (L+1, 1)
@@ -55,7 +62,9 @@ def compute_f(omegas, tau, V, Z, K, **kwargs):
     return tau * torch.sum(bernstein_weights * bernstein_betas, dim=-1)
 
 
-def model(periodogram, omegas, data, **kwargs):
+def model(
+    periodogram: torch.Tensor, omegas: torch.Tensor, data: torch.Tensor, **kwargs
+):
     """The model, contaiting priors and the model likelihood."""
     ### obtain constants or set them to default values
     L = kwargs.get("L", 10)
@@ -96,14 +105,16 @@ def model(periodogram, omegas, data, **kwargs):
     return f
 
 
-def guide(periodogram, omegas, data, **kwargs):
+def guide(
+    periodogram: torch.Tensor, omegas: torch.Tensor, data: torch.Tensor, **kwargs
+):
     """The variational family used to approximate the posterior."""
     ### obtain constants or set them to default values
-    L = kwargs.get("L", 10)
-    M = kwargs.get("M", 1)
-    MIN_K = kwargs.get("MIN_K", 10)
-    MAX_K = kwargs.get("MAX_K", 200)
-    STEP_K = kwargs.get("STEP_K", 1)
+    L: int = kwargs.get("L", 10)
+    M: int = kwargs.get("M", 1)
+    MIN_K: int = kwargs.get("MIN_K", 10)
+    MAX_K: int = kwargs.get("MAX_K", 200)
+    STEP_K: int = kwargs.get("STEP_K", 1)
 
     LEN_K = int(np.ceil((MAX_K - MIN_K) / STEP_K))
 
