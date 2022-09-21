@@ -12,7 +12,7 @@ import pyro.infer
 import pyro.optim
 import torch
 
-from pyro_specification import compute_f, guide, model
+from pyro_specification_fixed_K import compute_f, guide, model
 
 
 def my_loss(
@@ -119,8 +119,10 @@ ordinal = (
 def main():
     # set font-size for matplotlib
     plt.rcParams.update({"font.size": 22})
+
     ### import the data
     print("importing the data...")
+
     dataset = "ma_simulation"
     dataset_names = {
         "ma_simulation": "MA Simulation",
@@ -146,10 +148,6 @@ def main():
         "periodogram": periodogram,
         "omegas": omegas,
         "data": data,
-        "L": 20,
-        "MIN_K": 20,
-        "MAX_K": 200,
-        "STEP_K": 5,
     }
 
     ### plot the data
@@ -162,7 +160,6 @@ def main():
         else np.arange(len(data)),
         df,
         label=f"{dataset_name}",
-        linewidth=4,
     )
 
     ax.grid(which="major")
@@ -186,9 +183,9 @@ def main():
 
     ### run the inference process
     print("running the inference process...")
-    interval = 100
-    num_particles = 5
-    num_iterations = 1000
+    interval = 500
+    num_particles = 1
+    num_iterations = 2000
     seeds = np.arange(10)
     optim = pyro.optim.AdagradRMSProp({"eta": 1, "t": 1 / 2})
     loss = partial(
@@ -216,13 +213,9 @@ def main():
             {
                 param: pyro.param(param)
                 for param in [
-                    "alpha_V",
-                    "beta_V",
-                    "alpha_Z",
-                    "beta_Z",
                     "alpha_tau",
                     "beta_tau",
-                    "ps_K",
+                    "ps_W",
                 ]
             },
         )
@@ -288,15 +281,12 @@ def main():
         LEN_K = int(np.ceil((MAX_K - MIN_K) / STEP_K))
         return torch.sum(ps_K * (torch.arange(LEN_K) * STEP_K + MIN_K))
 
-    def expected_value_parameters(
-        alpha_V, beta_V, alpha_Z, beta_Z, alpha_tau, beta_tau, ps_K
-    ):
+    def expected_value_parameters(ps_W, alpha_tau, beta_tau):
         """Compute the expected value approximation."""
-        V = dist.Beta(alpha_V, beta_V).mean
-        Z = dist.Beta(alpha_Z, beta_Z).mean
+        W = dist.Dirichlet(ps_W).mean
         tau = dist.Gamma(alpha_tau, beta_tau).mean
-        K = mean_k(ps_K, **input).to(torch.long)
-        return {"V": V, "Z": Z, "tau": tau, "K": K}
+        K = torch.tensor([150])
+        return {"W": W, "tau": tau, "K": K}
 
     ### load the MCMC estimate and true posterior, if available
     mcmc_spd = np.genfromtxt(f"data/{dataset}_mcmc.csv", delimiter=",", skip_header=1)
@@ -364,7 +354,7 @@ def main():
     ax.set_ylabel("Value")
 
     fig.set_size_inches(fig_width, fig_height)
-    filename = f"images/{dataset}_prior.png"
+    filename = f"images/{dataset}_prior_fixed_K.png"
     fig.savefig(filename)
     plt.close(fig)
 
@@ -425,7 +415,7 @@ def main():
     ax.set_ylabel("Value")
 
     fig.set_size_inches(fig_width, fig_height)
-    filename = f"images/{dataset}_expected_value_spds_best_seeds.png"
+    filename = f"images/{dataset}_expected_value_spds_best_seeds_fixed_K.png"
     fig.savefig(filename)
     plt.close(fig)
 
@@ -479,7 +469,7 @@ def main():
     ax.set_ylabel("Value")
 
     fig.set_size_inches(fig_width, fig_height)
-    filename = f"images/{dataset}_spds_one_seed.png"
+    filename = f"images/{dataset}_spds_one_seed_fixed_K.png"
     fig.savefig(filename)
     plt.close(fig)
 
@@ -534,7 +524,7 @@ def main():
     ax.set_ylabel("Value")
 
     fig.set_size_inches(fig_width, fig_height)
-    filename = f"images/{dataset}_mean_spd_best_seeds.png"
+    filename = f"images/{dataset}_mean_spd_best_seeds_fixed_K.png"
     fig.savefig(filename)
     plt.close(fig)
 
@@ -567,7 +557,6 @@ def main():
             torch.median(spds, dim=-2)[0].detach().numpy(),
             color=f"C{next(colors)}",
             label=f"{ordinal(index+1)}Largest Final ELBO",
-            linewidth=4,
         )
 
     if true_psd is not None:
@@ -576,7 +565,6 @@ def main():
             true_psd,
             color=f"C{next(colors)}",
             label="True Spectral Density",
-            linewidth=4,
         )
 
     ax.set_yscale("log")
@@ -588,7 +576,7 @@ def main():
     ax.set_ylabel("Value")
 
     fig.set_size_inches(fig_width, fig_height)
-    filename = f"images/{dataset}_median_spd_best_seeds.png"
+    filename = f"images/{dataset}_median_spd_best_seeds_fixed_K.png"
     fig.savefig(filename)
     plt.close(fig)
 
@@ -628,7 +616,7 @@ def main():
     ax.set_ylabel(f"Median ELBO within ${smoothing_number}\,${smoothing_unit}")
 
     fig.set_size_inches(fig_width, fig_height)
-    filename = f"images/{dataset}_convergence.png"
+    filename = f"images/{dataset}_convergence_fixed_K.png"
     fig.savefig(filename)
     plt.close(fig)
 
